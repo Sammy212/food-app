@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Image, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import { BellIcon, MagnifyingGlassIcon } from 'react-native-heroicons/outline';
@@ -11,17 +11,33 @@ export default function HomeScreen() {
 
   const [activeCategory, setActiveCategory] = useState('Beef');
   const [categories, setCategories] = useState([]);
+  const [meals, setMeals] = useState([]);
 
   useEffect(() => {
     getCategories();
+    getRecipes();
   },[])
 
+  // Categories API connection handling
   const getCategories = async () => {
     try {
       const response = await axios.get('https://themealdb.com/api/json/v1/1/categories.php');
       // console.log('got categories: ',response.data);
       if(response && response.data) {
         setCategories(response.data.categories);
+      }
+    } catch (err) {
+      console.log('error: ', err.message);
+    }
+  }
+  
+  // Recipes API connection handling
+  const getRecipes = async (category="Beef") => {
+    try {
+      const response = await axios.get(`https://themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+      // console.log('got categories: ',response.data);
+      if(response && response.data) {
+        setMeals(response.data.meals);
       }
     } catch (err) {
       console.log('error: ', err.message);
@@ -65,12 +81,12 @@ export default function HomeScreen() {
 
         {/* Categories Section */}
         <View>
-          {categories.length > 0 &&<Categories categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />}
+          { categories.length>0 && <Categories categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />}
         </View>
 
         {/* Recipes */}
         <View>
-          <Recipes />
+          <Recipes meals={meals} categories={categories} />
         </View>
       </ScrollView>
     </View>
