@@ -1,11 +1,32 @@
 import { View, Text, ScrollView, Image, TextInput } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import { BellIcon, MagnifyingGlassIcon } from 'react-native-heroicons/outline';
 import Categories from '../components/categories';
+import axios from 'axios';
+import Recipes from '../components/recipes';
 
 export default function HomeScreen() {
+
+  const [activeCategory, setActiveCategory] = useState('Beef');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    getCategories();
+  },[])
+
+  const getCategories = async () => {
+    try {
+      const response = await axios.get('https://themealdb.com/api/json/v1/1/categories.php');
+      // console.log('got categories: ',response.data);
+      if(response && response.data) {
+        setCategories(response.data.categories);
+      }
+    } catch (err) {
+      console.log('error: ', err.message);
+    }
+  }
   return (
     <View className="flex-1 bg-white">
       <StatusBar style="dark" />
@@ -44,7 +65,12 @@ export default function HomeScreen() {
 
         {/* Categories Section */}
         <View>
-          <Categories />
+          {categories.length > 0 &&<Categories categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />}
+        </View>
+
+        {/* Recipes */}
+        <View>
+          <Recipes />
         </View>
       </ScrollView>
     </View>
